@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit Tracker</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #faf9f6;
+        --text: #2d2d2d;
+        --border: #e8e4df;
+        --today-ring: #ff6b6b;
+        --header-bg: #f3f0eb;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Noto Sans JP", "Montserrat", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .tracker {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .tracker-header {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .tracker-header h1 {
+        font-family: "Montserrat", sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      .tracker-header .month {
+        font-family: "Montserrat", sans-serif;
+        font-size: 13px;
+        color: #999;
+        font-weight: 500;
+      }
+
+      .grid-wrapper {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+        scrollbar-width: thin;
+        scrollbar-color: #ddd transparent;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 160px repeat(var(--days), 28px);
+        gap: 0;
+        min-width: fit-content;
+      }
+
+      .cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        border-bottom: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        font-size: 11px;
+        transition: all 0.15s ease;
+      }
+
+      .cell:last-child {
+        border-right: none;
+      }
+
+      .habit-label {
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 700;
+        justify-content: flex-start;
+        white-space: nowrap;
+        background: var(--header-bg);
+        border-right: 2px solid var(--border);
+        position: sticky;
+        left: 0;
+        z-index: 2;
+      }
+
+      .day-header {
+        font-family: "Montserrat", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        color: #aaa;
+        background: var(--header-bg);
+        border-bottom: 2px solid var(--border);
+      }
+
+      .day-header.today {
+        color: var(--today-ring);
+        position: relative;
+      }
+
+      .day-header.today::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--today-ring);
+      }
+
+      .day-header.weekend {
+        color: #ccc;
+      }
+
+      .corner {
+        background: var(--header-bg);
+        border-right: 2px solid var(--border);
+        border-bottom: 2px solid var(--border);
+        position: sticky;
+        left: 0;
+        z-index: 3;
+      }
+
+      .day-cell {
+        cursor: pointer;
+        position: relative;
+      }
+
+      .day-cell:hover {
+        background: #f5f3ef;
+      }
+
+      .day-cell.checked {
+        animation: pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.8);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .day-cell .dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .day-cell:not(.checked) .dot {
+        background: transparent;
+        border: 1.5px dashed #e0dcd6;
+      }
+
+      .day-cell.checked .dot {
+        border: none;
+      }
+
+      /* row color classes */
+      .row-0 .day-cell.checked .dot {
+        background: #ff8fab;
+      }
+      .row-1 .day-cell.checked .dot {
+        background: #a0c4ff;
+      }
+      .row-2 .day-cell.checked .dot {
+        background: #bdb2ff;
+      }
+      .row-3 .day-cell.checked .dot {
+        background: #ffc6ff;
+      }
+      .row-4 .day-cell.checked .dot {
+        background: #fdffb6;
+      }
+      .row-5 .day-cell.checked .dot {
+        background: #caffbf;
+      }
+      .row-6 .day-cell.checked .dot {
+        background: #ffd6a5;
+      }
+      .row-7 .day-cell.checked .dot {
+        background: #9bf6ff;
+      }
+      .row-8 .day-cell.checked .dot {
+        background: #ffadad;
+      }
+      .row-9 .day-cell.checked .dot {
+        background: #a8dadc;
+      }
+      .row-10 .day-cell.checked .dot {
+        background: #e2cfea;
+      }
+      .row-11 .day-cell.checked .dot {
+        background: #f1c0b9;
+      }
+
+      .last-row .cell {
+        border-bottom: none;
+      }
+
+      .stats {
+        display: flex;
+        gap: 20px;
+        margin-top: 14px;
+        padding: 0 4px;
+      }
+
+      .stat {
+        font-size: 11px;
+        color: #aaa;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .stat strong {
+        color: var(--text);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tracker">
+      <div class="tracker-header">
+        <h1>HABIT TRACKER</h1>
+        <span class="month" id="monthLabel"></span>
+      </div>
+      <div class="grid-wrapper">
+        <div class="grid" id="grid"></div>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <script>
+      const habits = [
+        { emoji: "💧", name: "水分 1.5L" },
+        { emoji: "🏃", name: "ジム" },
+        { emoji: "🧘", name: "ピラティス" },
+        { emoji: "💪", name: "筋トレ" },
+        { emoji: "📚", name: "読書" },
+        { emoji: "🍜", name: "料理vlog" },
+        { emoji: "🧵", name: "編み物" },
+        { emoji: "💄", name: "美容ケア" },
+        { emoji: "👨‍👩‍👦", name: "家族時間" },
+        { emoji: "💻", name: "EMT工数入力" },
+      ];
+
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const today = now.getDate();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      document.getElementById("monthLabel").textContent = `${monthNames[month]} ${year}`;
+
+      const grid = document.getElementById("grid");
+      grid.style.setProperty("--days", daysInMonth);
+
+      // Storage key
+      const storageKey = `habits-${year}-${month}`;
+      let state = JSON.parse(localStorage.getItem(storageKey) || "{}");
+
+      function saveState() {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      }
+
+      function buildGrid() {
+        // Corner cell
+        const corner = document.createElement("div");
+        corner.className = "cell corner";
+        grid.appendChild(corner);
+
+        // Day headers
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dayEl = document.createElement("div");
+          const dow = new Date(year, month, d).getDay();
+          let cls = "cell day-header";
+          if (d === today) cls += " today";
+          if (dow === 0 || dow === 6) cls += " weekend";
+          dayEl.className = cls;
+          dayEl.textContent = d;
+          grid.appendChild(dayEl);
+        }
+
+        // Habit rows
+        habits.forEach((habit, ri) => {
+          const label = document.createElement("div");
+          label.className = `cell habit-label row-${ri}`;
+          label.textContent = `${habit.emoji} ${habit.name}`;
+          if (ri === habits.length - 1) label.classList.add("last-row-label");
+          grid.appendChild(label);
+
+          for (let d = 1; d <= daysInMonth; d++) {
+            const cell = document.createElement("div");
+            const key = `${ri}-${d}`;
+            cell.className = `cell day-cell row-${ri}`;
+            if (ri === habits.length - 1) cell.classList.add("last-row");
+            if (state[key]) cell.classList.add("checked");
+
+            const dot = document.createElement("div");
+            dot.className = "dot";
+            cell.appendChild(dot);
+
+            cell.addEventListener("click", () => {
+              state[key] = !state[key];
+              cell.classList.toggle("checked");
+              saveState();
+              updateStats();
+            });
+
+            grid.appendChild(cell);
+          }
+        });
+      }
+
+      function updateStats() {
+        const statsEl = document.getElementById("stats");
+        let totalChecked = 0;
+        let todayChecked = 0;
+        const total = habits.length * daysInMonth;
+
+        for (const key in state) {
+          if (state[key]) {
+            totalChecked++;
+            if (key.endsWith(`-${today}`)) todayChecked++;
+          }
+        }
+
+        const pct = total > 0 ? Math.round((totalChecked / total) * 100) : 0;
+        statsEl.innerHTML = `
+      <span class="stat">TODAY <strong>${todayChecked}/${habits.length}</strong></span>
+      <span class="stat">MONTH <strong>${pct}%</strong></span>
+    `;
+      }
+
+      buildGrid();
+      updateStats();
+    </script>
+  </body>
+</html>
